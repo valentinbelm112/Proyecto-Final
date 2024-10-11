@@ -1,6 +1,5 @@
 package com.microservicios.cliente.business;
 
-import com.microservicios.cliente.entity.ClienteEntity;
 import com.microservicios.cliente.model.ClienteRequest;
 import com.microservicios.cliente.model.ClienteResponse;
 

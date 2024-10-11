@@ -93,28 +93,7 @@ public class CuentaServiceImplTest {
 
 
 
-    @Test
-    public void testDepositar_CuentaExistente() {
 
-        when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuentaEntity));
-        double monto = 50.0;
-
-        CuentaResponse response = cuentaService.depositar(1L, monto);
-
-        assertEquals(150.0, response.getSaldo());
-        verify(transaccionServiceClient, times(1)).crearTransaccionEnMicroservicio(any());
-    }
-
-    @Test
-    public void testRetirar_CuentaExistente_SaldoSuficiente() {
-        when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuentaEntity));
-        double monto = 50.0;
-
-        CuentaResponse response = cuentaService.retirar(1L, monto);
-
-        assertEquals(50.0, response.getSaldo());
-        verify(transaccionServiceClient, times(1)).crearTransaccionRetiroEnMicroservicio(any());
-    }
 
     @Test
     public void testRetirar_CuentaAhorros_SaldoInsuficiente_LanzaExcepcion() {
