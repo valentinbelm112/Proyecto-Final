@@ -19,7 +19,6 @@ public class RetiroStrategy implements TransaccionStrategy {
 
     @Override
     public void ejecutarTransaccion(CuentaEntity cuenta, Double monto) {
-        cuenta.setSaldo(cuenta.getSaldo() - monto);
 
         // cuentaRepository.save(cuenta); se guardara en el micro-transaccion-mongodb
 

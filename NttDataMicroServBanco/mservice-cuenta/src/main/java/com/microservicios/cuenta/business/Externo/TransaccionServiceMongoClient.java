@@ -16,11 +16,12 @@ public class TransaccionServiceMongoClient {
     }
 
     public void crearTransaccionRetiroEnMicroservicio(RetiroMongo retiro) {
+
         webClient.post()
                 .uri("/api/mongo/transacciones/retiro")
                 .bodyValue(retiro)
                 .retrieve()
-                .bodyToMono(Deposito.class)
+                .bodyToMono(Retiro.class)
                 .subscribe(response -> {
 
                 }, error -> {
