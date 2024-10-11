@@ -84,18 +84,12 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
 
-    @CircuitBreaker(name = "transaccion", fallbackMethod = "handleValidarCuentaActivaFailure")
+
     public boolean validarCuentaActiva(Long id) {
         System.out.println("Llamando a validarCuentaActiva con ID: " + id);
         //throw new IllegalArgumentException("Simulación de error en el servicio");
         return CuentaService.validarCuentaActiva(id);
     }
 
-    // Método de fallback
-    public boolean handleValidarCuentaActivaFailure(Long id, Throwable t) {
-        // Manejo de la falla, como registrar un error o realizar alguna acción alternativa
-        System.out.println("Fallo al validar la cuenta activa para el cliente con ID: " + id + " debido a: " + t.getMessage());
-        // Retornar un valor predeterminado o lanzar una excepción según sea necesario
-        return false; // o lanzar una excepción
-    }
+
 }

@@ -1,5 +1,6 @@
 package com.microservicios.cliente.mockito.service;
 
+import com.microservicios.cliente.business.CuentaService;
 import com.microservicios.cliente.business.impl.ClienteServiceImpl;
 import com.microservicios.cliente.entity.ClienteEntity;
 import com.microservicios.cliente.mapper.ClienteMapperEntity;
@@ -11,22 +12,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ClienteServiceImplTest {
 
     @Mock
     private ClienteRepository clienteRepository;
+
+    @Mock
+    private CuentaService cuentaService;
 
     @InjectMocks
     private ClienteServiceImpl clienteService;
@@ -47,7 +52,7 @@ class ClienteServiceImplTest {
         clienteEntity.setDni("12345678");
         clienteEntity.setEmail("juan.perez@example.com");
 
-        Mockito.when(clienteRepository.save(any(ClienteEntity.class)))
+        when(clienteRepository.save(any(ClienteEntity.class)))
                 .thenReturn(clienteEntity);
 
         ClienteResponse expectedResponse = ClienteMapperEntity.ClienteresponseMapperofClienteEntity(clienteEntity);
@@ -71,7 +76,7 @@ class ClienteServiceImplTest {
         cliente2.setNombre("María");
         cliente2.setApellido("Gómez");
 
-        Mockito.when(clienteRepository.findAll())
+        when(clienteRepository.findAll())
                 .thenReturn(Arrays.asList(cliente1, cliente2));
 
         List<ClienteResponse> expectedResponses = Arrays.asList(
@@ -94,7 +99,7 @@ class ClienteServiceImplTest {
         clienteEntity.setNombre("Juan");
         clienteEntity.setApellido("Pérez");
 
-        Mockito.when(clienteRepository.findById(anyLong()))
+        when(clienteRepository.findById(anyLong()))
                 .thenReturn(Optional.of(clienteEntity));
 
         ClienteResponse expectedResponse = ClienteMapperEntity.ClienteresponseMapperofClienteEntity(clienteEntity);
@@ -116,26 +121,28 @@ class ClienteServiceImplTest {
         clienteEntity.setNombre("Juan");
         clienteEntity.setApellido("Pérez");
 
-        Mockito.when(clienteRepository.findById(anyLong()))
+        when(clienteRepository.findById(anyLong()))
                 .thenReturn(Optional.of(clienteEntity));
-        Mockito.when(clienteRepository.save(any(ClienteEntity.class)))
+        when(clienteRepository.save(any(ClienteEntity.class)))
                 .thenReturn(clienteEntity);
 
         ClienteResponse actualResponse = clienteService.actualizarCliente(1L, clienteRequest);
 
         assertEquals("Juan Actualizado", actualResponse.getNombre());
     }
-/*
+
     @Test
     @DisplayName("wCuando se elimina un cliente  con exito")
-    void whenEliminarClienteOk() {
-        Long clienteId = 1L;
+    void eliminarCliente_Success() {
+        // Arrange
+        when(clienteRepository.existsById(1L)).thenReturn(true);
+        when(cuentaService.validarCuentaActiva(1L)).thenReturn(false);
 
-        Mockito.when(clienteRepository.existsById(clienteId))
-                .thenReturn(true);
+        // Act
+        String result = clienteService.eliminarCliente(1L);
 
-        //clienteService.eliminarCliente(clienteId);
-
-        Mockito.verify(clienteRepository).deleteById(clienteId);
-    }*/
+        // Assert
+        assertEquals("Cliente eliminado con éxito: 1", result);
+        verify(clienteRepository, times(1)).deleteById(1L);
+    }
 }
