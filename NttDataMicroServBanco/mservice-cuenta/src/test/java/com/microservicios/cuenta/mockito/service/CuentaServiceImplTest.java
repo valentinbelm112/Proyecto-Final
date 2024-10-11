@@ -1,4 +1,5 @@
 package com.microservicios.cuenta.mockito.service;
+import com.microservicios.cuenta.business.TransaccionStrategy;
 import com.microservicios.cuenta.business.impl.CuentaServiceImpl;
 import com.microservicios.cuenta.entity.CuentaEntity;
 import com.microservicios.cuenta.entity.TipoCuenta;
@@ -33,8 +34,9 @@ public class CuentaServiceImplTest {
     @Mock
     private TransaccionServiceClient transaccionServiceClient;
 
+
     @Mock
-    private TransaccionServiceMongoClient transaccionServiceMongoClient;
+    private TransaccionStrategy transaccionStrategy;
 
     private CuentaEntity cuentaEntity;
 
