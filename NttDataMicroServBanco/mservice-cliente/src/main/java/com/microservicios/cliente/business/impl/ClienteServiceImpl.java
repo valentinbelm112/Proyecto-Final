@@ -1,0 +1,101 @@
+package com.microservicios.cliente.business.impl;
+
+import com.microservicios.cliente.business.ClienteService;
+import com.microservicios.cliente.business.CuentaService;
+import com.microservicios.cliente.business.Externo.TransaccionServiceClient;
+import com.microservicios.cliente.entity.ClienteEntity;
+import com.microservicios.cliente.mapper.ClienteMapperEntity;
+import com.microservicios.cliente.mapper.ClienteMapperRequest;
+import com.microservicios.cliente.model.ClienteRequest;
+import com.microservicios.cliente.model.ClienteResponse;
+import com.microservicios.cliente.repository.ClienteRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import static com.microservicios.cliente.mapper.ClienteMapperEntity.getCuentaArrayEntityofCuentaArrayResponse;
+import static com.microservicios.cliente.util.clientUtil.clienteNoEncontrado;
+
+@Service
+public class ClienteServiceImpl implements ClienteService {
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    CuentaService CuentaService;
+
+    @Override
+    public ClienteResponse crearCliente(ClienteRequest cliente) {
+        ClienteEntity clienteEntity= Optional.of(ClienteMapperRequest.ClienteEntityMapperofClientesRequest(cliente))
+                .map(clienteRepository::save)
+                .orElseThrow(() -> new IllegalArgumentException("Error al crear la cuenta"));
+
+        return ClienteMapperEntity.ClienteresponseMapperofClienteEntity(clienteEntity);
+
+    }
+
+    @Override
+    public List<ClienteResponse> listarClientes() {
+        List<ClienteEntity> clienteEntities= clienteRepository.findAll().stream()
+                .filter(cliente -> cliente.getId() != null)
+                .collect(Collectors.toList());
+
+         return getCuentaArrayEntityofCuentaArrayResponse(clienteEntities);
+    }
+
+    @Override
+    public ClienteResponse obtenerClientePorId(Long id) {
+        ClienteEntity clienteEntity= clienteRepository.findById(Long.valueOf(id))
+                .orElseThrow(clienteNoEncontrado(Long.valueOf(id)));
+        return ClienteMapperEntity.ClienteresponseMapperofClienteEntity(clienteEntity);
+    }
+
+    @Override
+    public ClienteResponse actualizarCliente(Long id, ClienteRequest clienteActualizado) {
+        ClienteEntity clienteEntity= clienteRepository.findById(id)
+                .map(clienteExistente -> {
+                    clienteExistente.setNombre(clienteActualizado.getNombre());
+                    clienteExistente.setApellido(clienteActualizado.getApellido());
+                    clienteExistente.setDni(clienteActualizado.getDni());
+                    clienteExistente.setEmail(clienteActualizado.getEmail());
+
+                    return clienteRepository.save(clienteExistente);
+                })
+                .orElseThrow(clienteNoEncontrado(id));
+
+        return ClienteMapperEntity.ClienteresponseMapperofClienteEntity(clienteEntity);
+    }
+
+    @Override
+    public String eliminarCliente(Long id) {
+        if (validarCuentaActiva(id)) {
+            throw new IllegalArgumentException("No se puede eliminar el cliente porque tiene la cuenta activa: " + id);
+        } else {
+            return Optional.of(id)
+                    .filter(clienteRepository::existsById)
+                    .map(clienteId -> {
+                        clienteRepository.deleteById(clienteId);
+                        return "Cliente eliminado con éxito: " + clienteId;
+                    })
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + id));
+        }
+    }
+
+
+    @CircuitBreaker(name = "transaccion", fallbackMethod = "handleValidarCuentaActivaFailure")
+    public boolean validarCuentaActiva(Long id) {
+        System.out.println("Llamando a validarCuentaActiva con ID: " + id);
+        //throw new IllegalArgumentException("Simulación de error en el servicio");
+        return CuentaService.validarCuentaActiva(id);
+    }
+
+    // Método de fallback
+    public boolean handleValidarCuentaActivaFailure(Long id, Throwable t) {
+        // Manejo de la falla, como registrar un error o realizar alguna acción alternativa
+        System.out.println("Fallo al validar la cuenta activa para el cliente con ID: " + id + " debido a: " + t.getMessage());
+        // Retornar un valor predeterminado o lanzar una excepción según sea necesario
+        return false; // o lanzar una excepción
+    }
+}

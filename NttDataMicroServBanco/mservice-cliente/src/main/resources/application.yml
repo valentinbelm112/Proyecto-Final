@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: mserver-cliente
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        enabled: true
+  config:
+    import: optional:configserver:http://localhost:9292
+logging:
+  level:
+    io.github.resilience4j: DEBUG
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 6
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 3s
+        permitted-number-of-calls-in-half-open-state: 4
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+    instances:
+      books:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+    instances:
+      transaccion:
+        base-config: default
+  retry:
+    configs:
+      default:
+        max-attempts: 3      # Número de intentos
+        wait-duration: 500ms # Duración de espera entre intentos
+    instances:
+      transaccion:
+        base-config: default # Aplica la configuración de reintentos a esta instancia
