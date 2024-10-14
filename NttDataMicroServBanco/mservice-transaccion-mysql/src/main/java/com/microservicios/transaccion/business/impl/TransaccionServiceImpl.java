@@ -8,8 +8,6 @@ import com.microservicios.transaccion.repository.TransaccionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -28,6 +26,7 @@ public class TransaccionServiceImpl implements TransaccionService {
     public TransaccionResponse crearTransaccion(TransaccionRequest transaccionRequest) {
         Transaccion transaccion= Optional.of(transaccionRepository.save(transaccionmapperofTransaccionRequest(transaccionRequest)))
                 .orElseThrow(() -> new RuntimeException("Error al crear la transacción"));
+
         return  transaccionmapperofTransaccionRequest(transaccion);
     }
     @Override
@@ -40,10 +39,10 @@ public class TransaccionServiceImpl implements TransaccionService {
 
     private String generarNumAleatorioTransaccion(int longitud) {
         Random random = new Random();
-        return IntStream.range(0, longitud) // Genera un rango de números desde 0 hasta longitud
-                .map(i -> random.nextInt(10)) // Mapea cada índice a un dígito aleatorio
-                .mapToObj(String::valueOf) // Convierte cada dígito a String
-                .collect(Collectors.joining()); // Une todos los String en uno solo
+        return IntStream.range(0, longitud)
+                .map(i -> random.nextInt(10))
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining());
     }
 
 

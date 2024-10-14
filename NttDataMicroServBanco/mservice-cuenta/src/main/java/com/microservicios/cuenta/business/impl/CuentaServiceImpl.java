@@ -28,13 +28,15 @@ public class CuentaServiceImpl implements CuentaService {
     @Autowired
     private CuentaRepository cuentaRepository;
 
-    @Autowired
-    @Qualifier("depositoStrategy")
-     TransaccionStrategy depositoStrategy;
+
 
     @Autowired
     @Qualifier("retiroStrategy")
     TransaccionStrategy retiroStrategy;
+
+    @Autowired
+    @Qualifier("depositoStrategy")
+    TransaccionStrategy depositoStrategy;
 
 
 

@@ -25,7 +25,7 @@ public class RetiroStrategy implements TransaccionStrategy {
         // Llamar al microservicio de transacciones mysql
         Retiro retiro = new Retiro();
         retiro.setMonto(monto);
-        retiro.setTipo("retiro");
+        retiro.setTipo("Retiro");
         retiro.setNumCuenta(cuenta.getNumeroCuenta());
         retiro.setComision(0.0);
         retiro.setNumTransaccion(transaccionServiceClient.obtenerTransaccion());

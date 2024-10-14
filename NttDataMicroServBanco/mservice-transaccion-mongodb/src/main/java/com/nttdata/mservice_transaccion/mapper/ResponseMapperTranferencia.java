@@ -23,22 +23,7 @@ public class ResponseMapperTranferencia {
         return transaccionResponse;
     }
 
-    public static List<TransaccionResponse> getTransaccionResponseArrayofTransaccionArray(List<Transaccion> transaccions){
-        List<TransaccionResponse> clienteModels = transaccions.stream()
-                .map(transaccion -> {
-                    TransaccionResponse transaccionResponse = new TransaccionResponse();
-                    transaccionResponse.setId(transaccion.getId());
-                    transaccionResponse.setTipo(transaccion.getTipo());
-                    transaccionResponse.setCuentaOrigen(transaccion.getCuentaOrigen());
-                    transaccionResponse.setMonto(transaccion.getMonto());
-                    transaccionResponse.setFecha(transaccion.getFecha());
-                    transaccionResponse.setCuentaDestino(transaccion.getCuentaDestino());
 
-                    return transaccionResponse; // Retornar el objeto ClienteModel
-                })
-                .collect(Collectors.toList()); // Recoger en una lista
-        return clienteModels;
-    }
 
 
 }

@@ -1,5 +1,10 @@
 package com.nttdata.mservice_transaccion.exception;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.time.LocalDateTime;
+@AllArgsConstructor
+@Data
 public class ErrorResponse {
     private String message;
     private LocalDateTime timestamp;
@@ -11,27 +16,5 @@ public class ErrorResponse {
         this.details = details;
     }
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getDetails() {
-        return details;
-    }
-
-    public void setDetails(String details) {
-        this.details = details;
-    }
 }

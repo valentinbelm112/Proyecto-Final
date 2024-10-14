@@ -14,8 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,16 +36,18 @@ public class CuentaServiceImplTest {
     private CuentaRepository cuentaRepository;
 
     @Mock
-    private TransaccionServiceClient transaccionServiceClient;
-
+    @Qualifier("depositoStrategy")
+    private TransaccionStrategy depositoStrategy;
 
     @Mock
-    private TransaccionStrategy transaccionStrategy;
+    @Qualifier("retiroStrategy")
+    private TransaccionStrategy retiroStrategy;
 
     private CuentaEntity cuentaEntity;
 
     @BeforeEach
     public void setUp() {
+        MockitoAnnotations.openMocks(this);
         cuentaEntity = new CuentaEntity();
         cuentaEntity.setId(1L);
         cuentaEntity.setSaldo(100.0);
@@ -108,5 +114,116 @@ public class CuentaServiceImplTest {
         assertEquals("No se puede retirar, saldo insuficiente en cuenta de ahorros.", exception.getMessage());
     }
 
-  // Otros métodos de prueba se pueden agregar de manera similar
+
+    @Test
+    public void testEliminarCuenta() {
+        CuentaEntity cuentaEntity = new CuentaEntity();
+        cuentaEntity.setId(1L);
+        when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuentaEntity));
+
+        cuentaService.eliminarCuenta(1L);
+
+        verify(cuentaRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    public void testObtenerTodasLasCuentas() {
+        CuentaEntity cuentaEntity1 = new CuentaEntity();
+        cuentaEntity1.setId(1L);
+        cuentaEntity1.setTipoCuenta(TipoCuenta.CORRIENTE);
+        cuentaEntity1.setTipoestado(TipoEstado.ACTIVA);
+        cuentaEntity1.setClienteId(3L);
+        CuentaEntity cuentaEntity2 = new CuentaEntity();
+        cuentaEntity2.setId(2L);
+        cuentaEntity2.setTipoCuenta(TipoCuenta.CORRIENTE);
+        cuentaEntity2.setTipoestado(TipoEstado.ACTIVA);
+        cuentaEntity2.setClienteId(4L);
+        when(cuentaRepository.findAll()).thenReturn(Arrays.asList(cuentaEntity1, cuentaEntity2));
+
+        List<CuentaResponse> cuentas = cuentaService.obtenerTodasLasCuentas();
+
+        assertNotNull(cuentas);
+        assertEquals(2, cuentas.size());
+    }
+
+    @Test
+    public void testDepositar() {
+        CuentaEntity cuentaEntity = new CuentaEntity();
+        cuentaEntity.setId(1L);
+        cuentaEntity.setSaldo(100.0);
+        cuentaEntity.setTipoCuenta(TipoCuenta.CORRIENTE);
+        cuentaEntity.setTipoestado(TipoEstado.ACTIVA);
+        cuentaEntity.setClienteId(2L);
+        when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuentaEntity));
+
+        CuentaResponse cuentaResponse = cuentaService.depositar(1L, 50.0);
+
+        assertNotNull(cuentaResponse);
+        assertEquals(150.0, cuentaResponse.getSaldo());
+        verify(depositoStrategy, times(1)).ejecutarTransaccion(cuentaEntity, 50.0);
+    }
+    @Test
+    public void testRetirar() {
+        CuentaEntity cuentaEntity = new CuentaEntity();
+        cuentaEntity.setId(1L);
+        cuentaEntity.setSaldo(100.0);
+        cuentaEntity.setTipoCuenta(TipoCuenta.CORRIENTE);
+        cuentaEntity.setTipoestado(TipoEstado.ACTIVA);
+        cuentaEntity.setClienteId(2L);
+        when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuentaEntity));
+
+        CuentaResponse cuentaResponse = cuentaService.retirar(1L, 50.0);
+
+        assertNotNull(cuentaResponse);
+        assertEquals(50.0, cuentaResponse.getSaldo());
+        verify(retiroStrategy, times(1)).ejecutarTransaccion(cuentaEntity, 50.0);
+    }
+
+    @Test
+    public void testVerificarCuenta() {
+        when(cuentaRepository.existsByClienteIdAndTipoestado(1L, TipoEstado.ACTIVA)).thenReturn(true);
+
+        boolean result = cuentaService.verificarCuenta(1L);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testObtenerCuentaPorNumCuenta() {
+        CuentaEntity cuentaEntity = new CuentaEntity();
+        cuentaEntity.setId(1L);
+        cuentaEntity.setNumeroCuenta("12345");
+        cuentaEntity.setTipoCuenta(TipoCuenta.CORRIENTE);
+        cuentaEntity.setTipoestado(TipoEstado.ACTIVA);
+        cuentaEntity.setClienteId(2L);
+        when(cuentaRepository.findByNumeroCuenta("12345")).thenReturn(cuentaEntity);
+
+        CuentaResponse cuentaResponse = cuentaService.obtenerCuentaPorNumCuenta("12345");
+
+        assertNotNull(cuentaResponse);
+        assertEquals("12345", cuentaResponse.getNumeroCuenta());
+    }
+
+    @Test
+    public void testActualizaCuenta() {
+        CuentaEntity cuentaEntity = new CuentaEntity();
+        cuentaEntity.setId(1L);
+        cuentaEntity.setSaldo(100.0);
+        cuentaEntity.setTipoCuenta(TipoCuenta.CORRIENTE);
+        cuentaEntity.setTipoestado(TipoEstado.ACTIVA);
+        cuentaEntity.setClienteId(2L);
+        when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuentaEntity));
+
+        CuentaRequest cuentaRequest = new CuentaRequest();
+        cuentaRequest.setSaldo(200.0);
+
+        when(cuentaRepository.save(any(CuentaEntity.class))).thenReturn(cuentaEntity);
+
+        CuentaResponse cuentaResponse = cuentaService.ActualizaCuenta(1, cuentaRequest);
+
+        assertNotNull(cuentaResponse);
+        assertEquals(200.0, cuentaResponse.getSaldo());
+    }
+
+    // Otros métodos de prueba se pueden agregar de manera similar
 }

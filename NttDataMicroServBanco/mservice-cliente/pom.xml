@@ -151,6 +151,13 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<excludes>
+
+								<exclude>**/com/microservicios/cliente/api/**</exclude>  <!-- Excluye todas las clases en el paquete api -->
+								<exclude>**/com/microservicios/cliente/model/**</exclude> <!-- Excluye todas las clases en el paquete model -->
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
